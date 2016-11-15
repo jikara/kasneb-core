@@ -9,6 +9,7 @@ import com.kasneb.entity.CictRegistration;
 import com.kasneb.entity.CpaRegistration;
 import com.kasneb.entity.CsRegistration;
 import com.kasneb.entity.Stream;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -89,4 +90,9 @@ public class RegistrationFacade {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public List<CpaRegistration> findRange() {
+        TypedQuery<CpaRegistration> query = em.createQuery("SELECT r FROM CpaRegistration r ORDER BY r.registered DESC", CpaRegistration.class);
+        query.setMaxResults(20);
+        return query.getResultList();
+    }
 }

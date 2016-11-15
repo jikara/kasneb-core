@@ -33,7 +33,7 @@ public class CentreFacade extends AbstractFacade<Centre> {
 
     public List<Centre> findCentres(String zoneCode) {
         TypedQuery<Centre> query
-                = em.createQuery("SELECT c FROM Centre c WHERE c.zone.code =:zoneCode", Centre.class);
+                = em.createQuery("SELECT c FROM Centre c WHERE c.zone.code =:zoneCode ORDER by c.name ASC", Centre.class);
         query.setParameter("zoneCode", zoneCode);
         return query.getResultList();
     }

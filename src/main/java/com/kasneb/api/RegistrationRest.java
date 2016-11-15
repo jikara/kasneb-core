@@ -53,6 +53,22 @@ public class RegistrationRest {
     }
 
     @GET
+    @Path("testdata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testDate(@PathParam("courseCode") String courseCode, @PathParam("regno") String regno) throws JsonProcessingException {
+        try {
+            anyResponse = registrationFacade.findRange();
+            json = mapper.writeValueAsString(anyResponse);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(RegistrationRest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Response
+                .status(Response.Status.OK)
+                .entity(json)
+                .build();
+    }
+
+    @GET
     @Path("{courseCode}/{regno}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response findRegistration(@PathParam("courseCode") String courseCode, @PathParam("regno") String regno) throws JsonProcessingException {
