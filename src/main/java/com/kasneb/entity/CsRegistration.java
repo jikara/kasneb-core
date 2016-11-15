@@ -7,10 +7,15 @@ package com.kasneb.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.kasneb.dto.Part;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -136,7 +141,15 @@ public class CsRegistration implements Serializable {
     private List<ExamBooking> examBookings;
     @OneToOne(mappedBy = "csRegistration")
     @JsonManagedReference
-    private CsExamEntry csExamEntry;
+    private CsExamEntry csExamEntry;    
+    @JsonManagedReference
+    @OneToMany(mappedBy = "csRegistration")
+    private List<CsRenewal> renewals;    
+    @Transient
+    private Part currentPart;
+    @Transient
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private Date nextRenewal;
 
     public CsRegistration() {
     }
@@ -479,6 +492,46 @@ public class CsRegistration implements Serializable {
 
     public void setCsExamEntry(CsExamEntry csExamEntry) {
         this.csExamEntry = csExamEntry;
+    }
+
+    public List<CsRenewal> getRenewals() {
+        return renewals;
+    }
+
+    public void setRenewals(List<CsRenewal> renewals) {
+        this.renewals = renewals;
+    }
+    
+     public Part getCurrentPart() {
+        Integer lowest = 3;
+        if (getEligiblePapers() != null) {
+            for (CsStudentPaper studentPaper : getEligiblePapers()) {
+                Integer part = studentPaper.getPaper().getPart();
+                if (part < lowest) {
+                    lowest = part;
+                }
+            }
+        }
+        return new Part(lowest, new Course("01"));
+    }
+
+    public Date getNextRenewal() {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Integer currentYear = 0;
+        if (getRenewals() != null) {
+            for (CsRenewal renewal : getRenewals()) {
+                Integer endYear = renewal.getEndYear();
+                if (endYear > currentYear) {
+                    currentYear = endYear;
+                }
+            }
+        }
+        try {
+            nextRenewal = formatter.parse(currentYear + "-07-01");
+        } catch (ParseException ex) {
+            Logger.getLogger(CpaRegistration.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return nextRenewal;
     }
 
 }

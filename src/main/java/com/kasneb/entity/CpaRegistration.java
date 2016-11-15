@@ -9,9 +9,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.kasneb.dto.Part;
 import java.io.Serializable;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -140,12 +144,14 @@ public class CpaRegistration implements Serializable {
     @OneToOne(mappedBy = "cpaRegistration")
     @JsonManagedReference
     private CpaExamEntry cpaExamEntry;
+    
     @JsonManagedReference
     @OneToMany(mappedBy = "cpaRegistration")
-    private List<CpaRenewal> renewals;
+    private List<CpaRenewal> renewals;    
     @Transient
     private Part currentPart;
     @Transient
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date nextRenewal;
 
     public CpaRegistration() {
@@ -496,6 +502,7 @@ public class CpaRegistration implements Serializable {
     }
 
     public Date getNextRenewal() {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         Integer currentYear = 0;
         if (getRenewals() != null) {
             for (CpaRenewal renewal : getRenewals()) {
@@ -504,6 +511,11 @@ public class CpaRegistration implements Serializable {
                     currentYear = endYear;
                 }
             }
+        }
+        try {
+            nextRenewal = formatter.parse(currentYear + "-07-01");
+        } catch (ParseException ex) {
+            Logger.getLogger(CpaRegistration.class.getName()).log(Level.SEVERE, null, ex);
         }
         return nextRenewal;
     }
