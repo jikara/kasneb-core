@@ -7,6 +7,7 @@ package com.kasneb.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.kasneb.dto.Part;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,20 +97,22 @@ public class CpaRegistration implements Serializable {
     private String idNo2;
     @Column(name = "Address1")
     private String address1;
-    @Column(name = "Address2")
-    private String address2;
-    @Column(name = "Address3")
-    private String address3;
-    @Column(name = "Address4")
-    private String address4;
-    @Column(name = "Address5")
-    private String address5;
+    @Column(name = "Address2C")
+    private String physicalAddress;
+    @Column(name = "Address3C")
+    private String address;
+    @Column(name = "Address4C")
+    private String town;
+    @Column(name = "Address5C")
+    private String country;
     @Column(name = "EmailAddress")
     private String email;
     @Column(name = "Cellphone")
     private String cellphone;
     @Column(name = "Telephone")
     private String telephone;
+    @Column(name = "PostalCodeC")
+    private String postalCode;
     @ManyToOne
     @JoinColumn(name = "PExamination", referencedColumnName = "ExamCode")
     private Course previousCourse;
@@ -137,41 +140,15 @@ public class CpaRegistration implements Serializable {
     @OneToOne(mappedBy = "cpaRegistration")
     @JsonManagedReference
     private CpaExamEntry cpaExamEntry;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "cpaRegistration")
+    private List<CpaRenewal> renewals;
+    @Transient
+    private Part currentPart;
+    @Transient
+    private Date nextRenewal;
 
     public CpaRegistration() {
-    }
-
-    public CpaRegistration(String regNo, Stream stream, Date registered, Integer firstExamDate, String lastName, String firstName, String otherName, String otherName2, Sex sex, Date dateOfBirth, Nation nation, String idNumber, Qualification quali, Date rrDate, String rrNumber, String pReg, String idNo2, String address1, String address2, String address3, String address4, String address5, String email, String cellphone, String telephone, Course previousCourse, String learnAbout, LearnAbout learnt, Nation nationality, Qualification qualification) {
-        this.regNo = regNo;
-        this.stream = stream;
-        this.registered = registered;
-        this.firstExamDate = firstExamDate;
-        this.lastName = lastName;
-        this.firstName = firstName;
-        this.otherName = otherName;
-        this.otherName2 = otherName2;
-        this.sex = sex;
-        this.dateOfBirth = dateOfBirth;
-        this.nation = nation;
-        this.idNumber = idNumber;
-        this.quali = quali;
-        this.rrDate = rrDate;
-        this.rrNumber = rrNumber;
-        this.pReg = pReg;
-        this.idNo2 = idNo2;
-        this.address1 = address1;
-        this.address2 = address2;
-        this.address3 = address3;
-        this.address4 = address4;
-        this.address5 = address5;
-        this.email = email;
-        this.cellphone = cellphone;
-        this.telephone = telephone;
-        this.previousCourse = previousCourse;
-        this.learnAbout = learnAbout;
-        this.learnt = learnt;
-        this.nationality = nationality;
-        this.qualification = qualification;
     }
 
     public String getRegNo() {
@@ -351,36 +328,52 @@ public class CpaRegistration implements Serializable {
         this.address1 = address1;
     }
 
-    public String getAddress2() {
-        return address2;
+    public Qualification getQuali() {
+        return quali;
     }
 
-    public void setAddress2(String address2) {
-        this.address2 = address2;
+    public void setQuali(Qualification quali) {
+        this.quali = quali;
     }
 
-    public String getAddress3() {
-        return address3;
+    public String getPhysicalAddress() {
+        return physicalAddress;
     }
 
-    public void setAddress3(String address3) {
-        this.address3 = address3;
+    public void setPhysicalAddress(String physicalAddress) {
+        this.physicalAddress = physicalAddress;
     }
 
-    public String getAddress4() {
-        return address4;
+    public String getAddress() {
+        return address;
     }
 
-    public void setAddress4(String address4) {
-        this.address4 = address4;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public String getAddress5() {
-        return address5;
+    public String getTown() {
+        return town;
     }
 
-    public void setAddress5(String address5) {
-        this.address5 = address5;
+    public void setTown(String town) {
+        this.town = town;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
     }
 
     public String getEmail() {
@@ -479,6 +472,40 @@ public class CpaRegistration implements Serializable {
 
     public void setCpaExamEntry(CpaExamEntry cpaExamEntry) {
         this.cpaExamEntry = cpaExamEntry;
+    }
+
+    public List<CpaRenewal> getRenewals() {
+        return renewals;
+    }
+
+    public void setRenewals(List<CpaRenewal> renewals) {
+        this.renewals = renewals;
+    }
+
+    public Part getCurrentPart() {
+        Integer lowest = 3;
+        if (getEligiblePapers() != null) {
+            for (CpaStudentPaper studentPaper : getEligiblePapers()) {
+                Integer part = studentPaper.getPaper().getPart();
+                if (part < lowest) {
+                    lowest = part;
+                }
+            }
+        }
+        return new Part(lowest, new Course("01"));
+    }
+
+    public Date getNextRenewal() {
+        Integer currentYear = 0;
+        if (getRenewals() != null) {
+            for (CpaRenewal renewal : getRenewals()) {
+                Integer endYear = renewal.getEndYear();
+                if (endYear > currentYear) {
+                    currentYear = endYear;
+                }
+            }
+        }
+        return nextRenewal;
     }
 
 }

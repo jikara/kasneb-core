@@ -66,7 +66,7 @@ public class ExamBooking implements Serializable {
     @JoinColumn(name = "CentreCode", referencedColumnName = "ccode")
     private Centre centre;
     @Column(name = "CentreName")
-    private String centreName;
+    private String centreName;    
 
     public Integer getId() {
         return id;
